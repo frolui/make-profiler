@@ -149,10 +149,13 @@ digraph G {
 
     hidden_nodes = []
 
-    print(datetime.datetime.now(), 108,3)
+    print(datetime.datetime.now(), 108,3, len(influences.items()))
+    countern = 0
     for target, infls in influences.items():
+        countern += 1
         group = classify_target(target, infls, dependencies, inputs, order_only)
         groups[group].add(target)
+        print(countern)
 
     print(datetime.datetime.now(), 108,4)
     for k, v in sorted(groups.items()):
@@ -212,11 +215,20 @@ digraph G {
 
 
 def render_dot(dot_fd, image_filename):
+    print(datetime.datetime.now(), 120,1)
     unflatten = Popen('unflatten', stdin=PIPE, stdout=PIPE)
+    print(datetime.datetime.now(), 120,2)
     dot = Popen(['dot', '-Tsvg'], stdin=unflatten.stdout, stdout=PIPE)
+    print(datetime.datetime.now(), 120,3)
     unflatten.stdin.write(dot_fd.read().encode('utf-8'))
+    print(datetime.datetime.now(), 120,4)
     unflatten.stdin.close()
+    print(datetime.datetime.now(), 120,5)
     unflatten.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+    print(datetime.datetime.now(), 120,6)
     svg, _ = dot.communicate()
+    print(datetime.datetime.now(), 120,7)
     svg = svg.replace(b'svg width', b'svg disabled-width').replace(b'height', b'disabled-height')
+    print(datetime.datetime.now(), 120,8)
     open(image_filename, 'wb').write(svg)
+    print(datetime.datetime.now(), 120,9)

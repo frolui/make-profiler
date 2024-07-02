@@ -129,6 +129,7 @@ def main(argv=sys.argv[1:]):
         docs,
         influences.keys()
     )
+    print(datetime.now(), 132)
 
 
 if __name__ == '__main__':
