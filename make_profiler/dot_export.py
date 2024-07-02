@@ -119,7 +119,7 @@ def dot_node(name, performance, docstring, cp):
 
 
 def export_dot(f, influences, dependencies, order_only, performance, indirect_influences, docs):
-    print(datetime.now(), 108,1)
+    print(datetime.datetime.now(), 108,1)
     f.write("""
 digraph G {
     rankdir="BT"
@@ -135,7 +135,7 @@ digraph G {
         for t in v:
             inputs.discard(t)
 
-    print(datetime.now(), 108,2)
+    print(datetime.datetime.now(), 108,2)
     cp, timing_tags = critical_path(influences, dependencies, inputs, performance)
 
     # cluster labels
@@ -149,12 +149,12 @@ digraph G {
 
     hidden_nodes = []
 
-    print(datetime.now(), 108,3)
+    print(datetime.datetime.now(), 108,3)
     for target, infls in influences.items():
         group = classify_target(target, infls, dependencies, inputs, order_only)
         groups[group].add(target)
 
-    print(datetime.now(), 108,4)
+    print(datetime.datetime.now(), 108,4)
     for k, v in sorted(groups.items()):
         label = ''
         if k in labels:
@@ -177,7 +177,7 @@ digraph G {
 
         f.write('subgraph "%s" { %s graph[style=dotted] %s }\n' % (k, label, ';\n'.join(nodes)))
 
-    print(datetime.now(), 108,5)
+    print(datetime.datetime.now(), 108,5)
     for k, v in influences.items():
         for t in sorted(v):
             if t in indirect_influences[k]:
@@ -189,25 +189,25 @@ digraph G {
 
     f.write('cluster_inputs_DUMMY -> cluster_tools_DUMMY -> cluster_result_DUMMY [ style=invis ];')
 
-    print(datetime.now(), 108,6)
+    print(datetime.datetime.now(), 108,6)
     if 'cluster_not_implemented' in groups:
         f.write('cluster_inputs_DUMMY -> cluster_not_implemented_DUMMY -> cluster_tools_DUMMY [ style=invis ];')
         f.write('cluster_not_implemented_DUMMY -> cluster_order_only_DUMMY [ style=invis ];')
 
-    print(datetime.now(), 108,7)
+    print(datetime.datetime.now(), 108,7)
     def format_deciminutes(k):
         hrs = math.floor(k / 6)
         min = (k %6)*10
         return '%s:%02d'%(hrs,min)
 
-    print(datetime.now(), 108,8)
+    print(datetime.datetime.now(), 108,8)
     for k,v in timing_tags.items():
         f.write('{ rank=same; ' + '%s [label="%s"]'%(k,format_deciminutes(k)) + ' [fontsize=50];' + ';'.join(['"%s"' % t for t in v if t not in hidden_nodes]) + '}')
     tags = sorted(timing_tags.keys())
 
     f.write('->'.join([ '%s' % k  for k in tags]))
 
-    print(datetime.now(), 108,9)
+    print(datetime.datetime.now(), 108,9)
     f.write('}')
 
 
