@@ -150,12 +150,9 @@ digraph G {
     hidden_nodes = []
 
     print(datetime.datetime.now(), 'export_dot',3, len(influences.items()))
-    countern = 0
     for target, infls in influences.items():
-        countern += 1
         group = classify_target(target, infls, dependencies, inputs, order_only)
         groups[group].add(target)
-        print(countern)
 
     print(datetime.datetime.now(), 'export_dot',4)
     for k, v in sorted(groups.items()):
@@ -214,21 +211,27 @@ digraph G {
     f.write('}')
 
 
-def render_dot(dot_fd, image_filename):
-    print(datetime.datetime.now(), 'render_dot',1)
+def render_dot(dot_fd, image_filename):    
+    print(datetime.datetime.now(), 'render_dot','start')
+
+    # PIPE - special value that can be used as the stdin, stdout or stderr argument to Popen 
+    # and indicates that a pipe to the standard stream should be opened.    
     unflatten = Popen('unflatten', stdin=PIPE, stdout=PIPE)
-    print(datetime.datetime.now(), 'render_dot',2)
+
+    # Popen executes a child program in a new process. Popen(["/usr/bin/git", "commit", "-m", "Fixes a bug."])
+    # dot is a graphviz provider
     dot = Popen(['dot', '-Tsvg'], stdin=unflatten.stdout, stdout=PIPE)
-    print(datetime.datetime.now(), 'render_dot',3)
+
     unflatten.stdin.write(dot_fd.read().encode('utf-8'))
-    print(datetime.datetime.now(), 'render_dot',4)
     unflatten.stdin.close()
-    print(datetime.datetime.now(), 'render_dot',5)
     unflatten.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+    print(unflatten.stdout)
     print(datetime.datetime.now(), 'render_dot',6)
+
+    # Popen.communicate - interact with process: Send data to stdin. Read data from stdout and stderr, until end-of-file is reached
+    # communicate() returns a tuple (stdout_data, stderr_data)
     svg, _ = dot.communicate()
     print(datetime.datetime.now(), 'render_dot',7)
     svg = svg.replace(b'svg width', b'svg disabled-width').replace(b'height', b'disabled-height')
-    print(datetime.datetime.now(), 'render_dot',8)
     open(image_filename, 'wb').write(svg)
-    print(datetime.datetime.now(), 'render_dot',9)
+    print(datetime.datetime.now(), 'render_dot','end')

@@ -103,6 +103,7 @@ def main(argv=sys.argv[1:]):
     print(datetime.now(), 103)
     deps, influences, order_only, indirect_influences = get_dependencies_influences(ast)
 
+    # StringIO is a text stream using an in-memory text buffer
     dot_file = io.StringIO()
 
     print(datetime.now(), 108)
@@ -115,6 +116,8 @@ def main(argv=sys.argv[1:]):
         indirect_influences,
         docs
     )
+
+    # sets the reference point of the File Handle at the beginning of the file 
     dot_file.seek(0)
 
     print(datetime.now(), 120)
