@@ -119,6 +119,7 @@ def dot_node(name, performance, docstring, cp):
 
 
 def export_dot(f, influences, dependencies, order_only, performance, indirect_influences, docs):
+    print(datetime.datetime.now(), 'export_dot',1)
     f.write("""
 digraph G {
     rankdir="BT"
@@ -134,6 +135,7 @@ digraph G {
         for t in v:
             inputs.discard(t)
 
+    print(datetime.datetime.now(), 'export_dot',2)
     cp, timing_tags = critical_path(influences, dependencies, inputs, performance)
 
     # cluster labels
@@ -147,10 +149,12 @@ digraph G {
 
     hidden_nodes = []
 
+    print(datetime.datetime.now(), 'export_dot',3, len(influences.items()))
     for target, infls in influences.items():
         group = classify_target(target, infls, dependencies, inputs, order_only)
         groups[group].add(target)
 
+    print(datetime.datetime.now(), 'export_dot',4)
     for k, v in sorted(groups.items()):
         label = ''
         if k in labels:
@@ -173,6 +177,7 @@ digraph G {
 
         f.write('subgraph "%s" { %s graph[style=dotted] %s }\n' % (k, label, ';\n'.join(nodes)))
 
+    print(datetime.datetime.now(), 'export_dot',5)
     for k, v in influences.items():
         for t in sorted(v):
             if t in indirect_influences[k]:
@@ -184,30 +189,49 @@ digraph G {
 
     f.write('cluster_inputs_DUMMY -> cluster_tools_DUMMY -> cluster_result_DUMMY [ style=invis ];')
 
+    print(datetime.datetime.now(), 'export_dot',6)
     if 'cluster_not_implemented' in groups:
         f.write('cluster_inputs_DUMMY -> cluster_not_implemented_DUMMY -> cluster_tools_DUMMY [ style=invis ];')
         f.write('cluster_not_implemented_DUMMY -> cluster_order_only_DUMMY [ style=invis ];')
 
+    print(datetime.datetime.now(), 'export_dot',7)
     def format_deciminutes(k):
         hrs = math.floor(k / 6)
         min = (k %6)*10
         return '%s:%02d'%(hrs,min)
 
+    print(datetime.datetime.now(), 'export_dot',8)
     for k,v in timing_tags.items():
         f.write('{ rank=same; ' + '%s [label="%s"]'%(k,format_deciminutes(k)) + ' [fontsize=50];' + ';'.join(['"%s"' % t for t in v if t not in hidden_nodes]) + '}')
     tags = sorted(timing_tags.keys())
 
     f.write('->'.join([ '%s' % k  for k in tags]))
 
+    print(datetime.datetime.now(), 'export_dot',9)
     f.write('}')
 
 
-def render_dot(dot_fd, image_filename):
+def render_dot(dot_fd, image_filename):    
+    print(datetime.datetime.now(), 'render_dot','start')
+
+    # PIPE - special value that can be used as the stdin, stdout or stderr argument to Popen 
+    # and indicates that a pipe to the standard stream should be opened.    
     unflatten = Popen('unflatten', stdin=PIPE, stdout=PIPE)
+
+    # Popen executes a child program in a new process. Popen(["/usr/bin/git", "commit", "-m", "Fixes a bug."])
+    # dot is a graphviz provider
     dot = Popen(['dot', '-Tsvg'], stdin=unflatten.stdout, stdout=PIPE)
+
     unflatten.stdin.write(dot_fd.read().encode('utf-8'))
     unflatten.stdin.close()
     unflatten.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+    print(unflatten.stdout)
+    print(datetime.datetime.now(), 'render_dot',6)
+
+    # Popen.communicate - interact with process: Send data to stdin. Read data from stdout and stderr, until end-of-file is reached
+    # communicate() returns a tuple (stdout_data, stderr_data)
     svg, _ = dot.communicate()
+    print(datetime.datetime.now(), 'render_dot',7)
     svg = svg.replace(b'svg width', b'svg disabled-width').replace(b'height', b'disabled-height')
     open(image_filename, 'wb').write(svg)
+    print(datetime.datetime.now(), 'render_dot','end')
